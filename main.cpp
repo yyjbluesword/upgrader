@@ -11,9 +11,9 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    Updater *updater = new Updater();
+    Upgrader *upgrader = new Upgrader();
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("updater",updater);
+    engine.rootContext()->setContextProperty("upgrader",upgrader);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;

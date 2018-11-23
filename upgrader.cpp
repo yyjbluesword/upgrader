@@ -4,8 +4,9 @@
 #include <QProcess>
 #include <QDebug>
 #include <QLibrary>
+#include <QDir>
 
-Updater::Updater(QObject *parent) : QObject(parent)
+Upgrader::Upgrader(QObject *parent) : QObject(parent)
 {
     rebootTimer = new QTimer(this);
     m_shell = "./updater.sh";
@@ -14,15 +15,16 @@ Updater::Updater(QObject *parent) : QObject(parent)
     m_operateFilesName = qgetenv("oFilesName");
 
     connect(&m_process, &QProcess::readyReadStandardOutput,
-            this, &Updater::updateProgress, Qt::DirectConnection);
+            this, &Upgrader::updateProgress, Qt::DirectConnection);
     connect(&m_process, static_cast<void (QProcess::*)(int,QProcess::ExitStatus)>(&QProcess::finished),
-            this,&Updater::updateFinished);
+            this,&Upgrader::updateFinished);
     connect(&m_process,&QProcess::started,
-            this, &Updater::processStarted);
+            this, &Upgrader::processStarted);
     connect(rebootTimer, SIGNAL(timeout()),
             this, SLOT(rebootSystem()));
     connect(&m_process, SIGNAL(error(QProcess::ProcessError)),
             this,SLOT(processError(QProcess::ProcessError)));
+    initDatabaseInterface();
 
     if(m_operateType.compare("updateKernel") == 0){
         updateKernel();
@@ -38,23 +40,23 @@ Updater::Updater(QObject *parent) : QObject(parent)
     //m_process.start(m_shell);
 }
 
-void Updater::updateKernel(){
+void Upgrader::updateKernel(){
     qDebug()<<"updateKernel was invoked!!!!!\n";
 }
 
-void Updater::updateServo(){
+void Upgrader::updateServo(){
     qDebug()<<"updateServo was invoked!!!!!\n";
 }
 
-void Updater::updateApplication(){
+void Upgrader::updateApplication(){
     qDebug()<<"updateApplication was invoked!!!!!\n";
 }
 
-void Updater::updateDatabase(){
+void Upgrader::updateDatabase(){
     qDebug()<<"updateDatabase was invoked!!!!!\n";
 }
 
-void Updater::updateProgress(){
+void Upgrader::updateProgress(){
 
     QByteArray line;
     while(!m_process.atEnd()){
@@ -77,20 +79,20 @@ void Updater::updateProgress(){
 
 }
 
-void Updater::updateFinished(int exitCode){
+void Upgrader::updateFinished(int exitCode){
     emit marqueeFinish();
     m_exitCounter = 4;
     rebootTimer->start(5000);
 }
 
-void Updater::updateMessage(const QString &msg){
+void Upgrader::updateMessage(const QString &msg){
     if(msg==m_message)
         return;
     m_message = msg;
     emit messageChanged(msg);
 }
 
-void Updater::rebootSystem()
+void Upgrader::rebootSystem()
 {
     rebootTimer->setInterval(1000);
     m_exitCounter--;
@@ -103,18 +105,33 @@ void Updater::rebootSystem()
     updateMessage(tr("System will reboot in %1s").arg(m_exitCounter));
 }
 
-void Updater::processStarted(){
+void Upgrader::processStarted(){
     qDebug()<<"yyj output processStarted\n";
     emit marqueeStart();
 }
 
-void Updater::start(){
-    qDebug()<<"Updater::start function was invoked!!!!!\n";
+void Upgrader::start(){
+    qDebug()<<"Upgrader::start function was invoked!!!!!\n";
     m_process.start(m_shell);
 }
 
-void Updater::processError(QProcess::ProcessError error)
+void Upgrader::processError(QProcess::ProcessError error)
 {
     qDebug()<<"processError error num is "<<error;
     updateMessage(tr("Failure to start an external process!!!"));
+}
+
+bool Upgrader::initDatabaseInterface()
+{
+    QDir dir("/rbctrl/mcserver_plugin/libsqlitedb.so");
+    QString path = dir.absolutePath();
+    QLibrary *databaseLibrary = new QLibrary(path);
+    databaseLibrary->load();
+    typedef int(*Test)();
+    Test t = (Test)databaseLibrary->resolve("test_get_all_record");
+    if(t){
+        qDebug()<<"test_get_all_record function was invoked!!!"<<endl;
+        t();
+    }
+    return true;
 }

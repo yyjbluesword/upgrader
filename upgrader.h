@@ -7,13 +7,13 @@
 #include <QString>
 #include <QTimer>
 
-class Updater : public QObject
+class Upgrader : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QString message READ message NOTIFY messageChanged)
 public:
-    explicit Updater(QObject *parent = nullptr);
+    explicit Upgrader(QObject *parent = nullptr);
 
     QString progress() const { return QString::number(m_progress,'f',2); }
     QString message() const { return m_message; }
@@ -24,6 +24,7 @@ public:
     void updateDatabase();
 
     Q_INVOKABLE void start();
+    bool initDatabaseInterface();
 
 signals:
     void progressChanged(float);

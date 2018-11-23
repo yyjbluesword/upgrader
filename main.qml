@@ -31,7 +31,7 @@ Window {
             }
             height: 34;
             color: "#333333";
-            text: updater.message;
+            text: upgrader.message;
             //text: "message";
         }
         Rectangle{
@@ -75,7 +75,7 @@ Window {
                     }
                     verticalAlignment: Text.AlignVCenter
                     color : "#333333";
-                    text: updater.progress + "%";
+                    text: upgrader.progress + "%";
                     //text: "80%";
                 }
 
@@ -91,7 +91,7 @@ Window {
             }
         }
         Connections{
-            target: updater
+            target: upgrader
             onMarqueeStart:{
                 marqueeTimer.start();
             }
@@ -101,7 +101,7 @@ Window {
             }
         }
         Component.onCompleted: {
-            updater.start();
+            upgrader.start();
             //marqueeTimer.start();
         }
     }
