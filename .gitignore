@@ -1,0 +1,9 @@
+.qmake.stash
+Makefile
+updater.sh
+*.user
+*.swp
+moc_*
+qrc_qml.*
+*.o
+upgrader

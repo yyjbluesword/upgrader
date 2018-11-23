@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>images/updateSymble.png</file>
+    </qresource>
+</RCC>
