@@ -6,6 +6,7 @@
 #include <QProcess>
 #include <QString>
 #include <QTimer>
+#include <QDebug>
 
 class Upgrader : public QObject
 {
@@ -16,12 +17,14 @@ public:
     explicit Upgrader(QObject *parent = nullptr);
 
     QString progress() const { return QString::number(m_progress,'f',2); }
-    QString message() const { return m_message; }
+    QString message() const {return m_message; }
 
     void updateKernel();
     void updateServo();
     void updateApplication();
     void updateDatabase();
+    void backupFactoryApplication();
+    void recoveryFactoryApplication();
 
     Q_INVOKABLE void start();
     bool initDatabaseInterface();
@@ -36,7 +39,7 @@ protected:
     void exitCount();
 
 protected slots:
-    void updateMessage(const QString &msg);
+    void updateMessage(QString msg);
     void updateProgress();
     void updateFinished(int exitCode);
     void processStarted();
@@ -44,7 +47,7 @@ protected slots:
     void rebootSystem();
 
 private:
-    float m_progress=0; //100.00%
+    float m_progress=0;
     QString m_message;
     int m_exitCounter;
     int m_rebootTimerId=-1;

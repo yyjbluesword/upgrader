@@ -1,4 +1,4 @@
-import QtQuick 2.9
+import QtQuick 2.0
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.3
 import QtQuick.Layouts 1.0
@@ -76,7 +76,6 @@ Window {
                     verticalAlignment: Text.AlignVCenter
                     color : "#333333";
                     text: upgrader.progress + "%";
-                    //text: "80%";
                 }
 
             }
@@ -101,8 +100,8 @@ Window {
             }
         }
         Component.onCompleted: {
+            console.log("Component.onCompleted.");
             upgrader.start();
-            //marqueeTimer.start();
         }
     }
 }

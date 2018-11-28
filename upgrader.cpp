@@ -5,11 +5,13 @@
 #include <QDebug>
 #include <QLibrary>
 #include <QDir>
+#include "cJSON.h"
+#include "db_manager.h"
+#include "db_context.h"
 
 Upgrader::Upgrader(QObject *parent) : QObject(parent)
 {
     rebootTimer = new QTimer(this);
-    m_shell = "./updater.sh";
     m_operateType = qgetenv("oType");
     m_operateDir = qgetenv("oDir");
     m_operateFilesName = qgetenv("oFilesName");
@@ -24,40 +26,44 @@ Upgrader::Upgrader(QObject *parent) : QObject(parent)
             this, SLOT(rebootSystem()));
     connect(&m_process, SIGNAL(error(QProcess::ProcessError)),
             this,SLOT(processError(QProcess::ProcessError)));
-    initDatabaseInterface();
-
-    if(m_operateType.compare("updateKernel") == 0){
-        updateKernel();
-    }else if(m_operateType.compare("updateServo") == 0){
-        updateServo();
-
-    }else if(m_operateType.compare("updateApplication") == 0){
-        updateApplication();
-
-    }else if(m_operateType.compare("updateDatabase") == 0){
-        updateDatabase();
-    }
-    //m_process.start(m_shell);
 }
 
 void Upgrader::updateKernel(){
-    qDebug()<<"updateKernel was invoked!!!!!\n";
+    m_shell = "/rbctrl/updater.sh";
+    m_process.start(m_shell);
 }
 
 void Upgrader::updateServo(){
     qDebug()<<"updateServo was invoked!!!!!\n";
+    m_shell = "echo update servo";
+    m_process.start(m_shell);
 }
 
 void Upgrader::updateApplication(){
     qDebug()<<"updateApplication was invoked!!!!!\n";
+    m_shell = "echo update Application";
+    //m_shell = "";
+    m_process.start(m_shell.data());
 }
 
 void Upgrader::updateDatabase(){
-    qDebug()<<"updateDatabase was invoked!!!!!\n";
+    updateMessage("start to update Database");
+    db_manager db_mrg;
+    const char *upgrade_pkg = "/update/elibotDB.upgrade.pkg";
+    const char *CONN_STRINGS = "/rbctrl/db/elibotDB.db";
+    const char *DB_DIR = "/rbctrl";
+    int ok = new_upgrade_db_manager(CONN_STRINGS, DB_DIR, upgrade_pkg, &db_mrg);
+    if(ok == DB_OK){
+        ok = db_mrg.execute(&db_mrg, NULL);
+        if(ok == DB_OK){
+            updateMessage(tr("update datebase success!"));
+            return;
+        }
+    }
+    updateMessage(tr("update database fail.\n"));
 }
 
 void Upgrader::updateProgress(){
-
     QByteArray line;
     while(!m_process.atEnd()){
         line = m_process.readLine();
@@ -79,17 +85,11 @@ void Upgrader::updateProgress(){
 
 }
 
-void Upgrader::updateFinished(int exitCode){
-    emit marqueeFinish();
-    m_exitCounter = 4;
-    rebootTimer->start(5000);
-}
-
-void Upgrader::updateMessage(const QString &msg){
+void Upgrader::updateMessage(const QString msg){
     if(msg==m_message)
         return;
     m_message = msg;
-    emit messageChanged(msg);
+    emit messageChanged(m_message);
 }
 
 void Upgrader::rebootSystem()
@@ -106,13 +106,14 @@ void Upgrader::rebootSystem()
 }
 
 void Upgrader::processStarted(){
-    qDebug()<<"yyj output processStarted\n";
     emit marqueeStart();
 }
 
-void Upgrader::start(){
-    qDebug()<<"Upgrader::start function was invoked!!!!!\n";
-    m_process.start(m_shell);
+
+void Upgrader::updateFinished(int exitCode){
+    emit marqueeFinish();
+    m_exitCounter = 4;
+    rebootTimer->start(5000);
 }
 
 void Upgrader::processError(QProcess::ProcessError error)
@@ -121,17 +122,30 @@ void Upgrader::processError(QProcess::ProcessError error)
     updateMessage(tr("Failure to start an external process!!!"));
 }
 
-bool Upgrader::initDatabaseInterface()
-{
-    QDir dir("/rbctrl/mcserver_plugin/libsqlitedb.so");
-    QString path = dir.absolutePath();
-    QLibrary *databaseLibrary = new QLibrary(path);
-    databaseLibrary->load();
-    typedef int(*Test)();
-    Test t = (Test)databaseLibrary->resolve("test_get_all_record");
-    if(t){
-        qDebug()<<"test_get_all_record function was invoked!!!"<<endl;
-        t();
+void Upgrader::start(){
+    if(m_operateType.compare("updateKernel") == 0){
+        updateKernel();
+    }else if(m_operateType.compare("updateServo") == 0){
+        updateServo();
+    }else if(m_operateType.compare("updateApplication") == 0){
+        updateApplication();
+    }else if(m_operateType.compare("updateDatabase") == 0){
+        updateDatabase();
+    }else if(m_operateType.compare("backupFactoryApplication") == 0){
+        backupFactoryApplication();
+    }else if(m_operateType.compare("recoveryFactoryApplication") == 0){
+        recoveryFactoryApplication();
     }
-    return true;
+}
+
+void Upgrader::backupFactoryApplication()
+{
+    m_shell = "/update/backupData.sh";
+    m_process.start(m_shell);
+}
+
+void Upgrader::recoveryFactoryApplication()
+{
+    m_shell = "/update/recovery.sh";
+    m_process.start(m_shell);
 }
