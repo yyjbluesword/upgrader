@@ -13,22 +13,22 @@ Window {
     property int timeCount: 0;
     Rectangle{
         anchors.fill: parent;
-        Label{
+        /*Label{
             x: 0; y: 0;
             text: upgrader.operateType
-        }
+        }*/
 
         Image{
             id: symble
             anchors{
                 horizontalCenter: parent.horizontalCenter;
-                bottom: message.top;
+                bottom: messageLabel.top;
                 bottomMargin: 10;
             }
             source: "qrc:/images/updateSymble.png";
         }
         Label{
-            id: message;
+            id: messageLabel;
             anchors.centerIn: parent;
             font{
                 pixelSize: fontSize;
@@ -37,14 +37,13 @@ Window {
             height: 34;
             color: "#333333";
             text: upgrader.message;
-            //text: "message";
         }
         Rectangle{
             id: progress;
-            //visible: marqueeTimer.running
+            visible: marqueeTimer.running
             width: 144;
             anchors{
-                top: message.bottom;
+                top: messageLabel.bottom;
                 horizontalCenter: parent.horizontalCenter;
                 topMargin: 10;
             }
@@ -72,6 +71,7 @@ Window {
                     width: 12;height: 12;
                     color: "transparent";
                 }
+                /*
                 Label{
                     id: progressValue
                     font{
@@ -81,7 +81,7 @@ Window {
                     verticalAlignment: Text.AlignVCenter
                     color : "#333333";
                     text: upgrader.progress + "%";
-                }
+                }*/
 
             }
         }
@@ -104,9 +104,8 @@ Window {
                 timeCount = 0;
             }
         }
-        Component.onCompleted: {
-            console.log("Component.onCompleted.");
-            upgrader.start();
-        }
+    }
+    Component.onCompleted: {
+        upgrader.start();
     }
 }

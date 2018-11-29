@@ -1,15 +1,15 @@
 #!/bin/sh
 plcPath="/mnt/udisk/rbctrl/data/user/"
 jbiPath="/mnt/udisk/rbctrl/program/"
+kernelPath="/mnt/udisk/updata/"
 case "$1" in
   upgradeKernel)
-# 	echo "backup plc data ..."
-#	if [ -d $plcPath ]; then
-#    echo "the dir have been created!";
-#	else
-#    mkdir $plcPath -p
-#	fi
-#	cp /rbctrl/plc.dat $plcPath
+	cd /rbctrl
+	echo "prepare to upgrade kernel"
+	/etc/init.d/rbctrl.sh stop
+	export OPERATE_TYPE=upgradeKernel
+	export OPERATE_TYPE
+	./upgrader -plugin rbteach -plugin tslib &
 	;;
   upgradeServo)
 #	echo "backup jbi files ..."

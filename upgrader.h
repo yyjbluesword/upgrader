@@ -1,7 +1,6 @@
 #ifndef UPGRADER_H
 #define UPGRADER_H
 
-
 #include <QObject>
 #include <QProcess>
 #include <QString>
@@ -11,43 +10,58 @@
 class Upgrader : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString progress READ progress NOTIFY progressChanged)
-    Q_PROPERTY(QString message READ message NOTIFY messageChanged)
-    Q_PROPERTY(QString operateType READ operateType NOTIFY operateTypeChanged)
+//    Q_PROPERTY(QString progress READ progress NOTIFY progressChanged)
+    Q_PROPERTY(QString message READ message WRITE setMessage NOTIFY messageChanged)
+//    Q_PROPERTY(QString operateType READ operateType NOTIFY operateTypeChanged)
 public:
     explicit Upgrader(QObject *parent = nullptr);
 
-    QString progress() const { return QString::number(m_progress,'f',2); }
-    QString message() const {return m_message; }
-    QString operateType() const {return m_operateType;}
+//    QString progress() const { return QString::number(m_progress,'f',2); }
+    QString message() {return m_message; }
+
+    void setMessage(QString msg){
+        if (msg!= m_message){
+            m_message = msg;
+            emit messageChanged();
+        }
+    }
 
     void updateKernel();
-    void updateServo();
-    void updateApplication();
+//    QString operateType() const {return m_operateType;}
+
+//    void updateKernel();
+    //void updateServo();
+    //void updateApplication();
     void updateDatabase();
-    void backupFactoryApplication();
-    void recoveryFactoryApplication();
+    //void backupFactoryApplication();
+    //void recoveryFactoryApplication();
+    void backupDatabase();
 
     Q_INVOKABLE void start();
-    bool initDatabaseInterface();
+    //bool initDatabaseInterface();
 
 signals:
-    void progressChanged(float);
-    void messageChanged(QString);
+    void messageChanged();
+    //void progressChanged(float);
     void marqueeStart();
     void marqueeFinish();
-    void operateTypeChanged(QString);
+    //void operateTypeChanged(QString);
 
+    /*
 protected:
     void exitCount();
+    */
 
 protected slots:
-    void updateMessage(QString msg);
-    void updateProgress();
-    void updateFinished(int exitCode);
-    void processStarted();
-    void processError(QProcess::ProcessError error);
+    //void messageChanged(QString);
+    //void updateMessage(QString msg);
+    //void updateProgress();
+    //void updateFinished(int exitCode);
+    //void processStarted();
+    //void processError(QProcess::ProcessError error);
     void rebootSystem();
+    void restartApp();
+    void updateStatus();
 
 private:
     float m_progress=0;
@@ -56,9 +70,10 @@ private:
     int m_rebootTimerId=-1;
 
     QString m_operateType,m_operateDir,m_operateFilesName;
+    QString m_operateStatus;
     QProcess m_process;
     QByteArray m_shell;
-    QTimer *rebootTimer;
+    QTimer *rebootTimer, *restartAppTimer,*statusTimer;
 };
 
 #endif // UPGRADER_H

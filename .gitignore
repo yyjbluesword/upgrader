@@ -7,3 +7,4 @@ moc_*
 qrc_qml.*
 *.o
 upgrader
+*.qm
