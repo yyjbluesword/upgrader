@@ -31,11 +31,12 @@ case "$1" in
 	cd ..
 	;;
   backupFactoryApplication)
-	echo "backupFactoryApplication..."
-	/etc/init.d/rbctrl.sh stop
-	cd /
-	tar -xvf rbctrl.tar /rbctrl
-	echo "backupFactoryApplication finished."
+	echo "backup facotry appliction ..."
+	cd /rbctrl
+	killall -9 cobot
+	sleep 1
+	export OPERATE_TYPE=backupFactoryApplication
+	./upgrader -plugin rbteach -plugin tslib &
 	;;
   *)
 	echo "Usage: $0 {backupPLC|backupJBI|backupDatabase|backupFactoryApplication}"

@@ -21,7 +21,13 @@ case "$1" in
 #	cp /rbctrl/*.jbi $jbiPath
 	;;
   upgradeDatabase)
-#	echo "backupDatabase..."
+	cd /rbctrl
+	echo "prepare to upgrade Database"
+	cp /mnt/udisk/rbctrl/db/elibotDB.upgrade.pkg /update
+	/etc/init.d/rbctrl.sh stop
+	export OPERATE_TYPE=upgradeDatabase
+	export OPERATE_TYPE
+	./upgrader -plugin rbteach -plugin tslib &
 	;;
   upgradeApplication)
 #	echo "backupFactoryApplication..."

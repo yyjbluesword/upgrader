@@ -28,14 +28,13 @@ public:
 
     void updateKernel();
 //    QString operateType() const {return m_operateType;}
-
-//    void updateKernel();
     //void updateServo();
     //void updateApplication();
     void updateDatabase();
-    //void backupFactoryApplication();
-    //void recoveryFactoryApplication();
     void backupDatabase();
+    void backupFactoryApplication();
+    void recoveryFactoryApplication();
+
 
     Q_INVOKABLE void start();
     //bool initDatabaseInterface();
