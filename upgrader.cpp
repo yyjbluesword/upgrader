@@ -12,7 +12,7 @@
 Upgrader::Upgrader(QObject *parent) : QObject(parent)
 {
     rebootTimer = new QTimer(this);
-    m_operateType = qgetenv("oType");
+    m_operateType = qgetenv("OPERATE_TYPE");
     m_operateDir = qgetenv("oDir");
     m_operateFilesName = qgetenv("oFilesName");
 
@@ -30,7 +30,7 @@ Upgrader::Upgrader(QObject *parent) : QObject(parent)
 
 void Upgrader::updateKernel(){
     m_shell = "/rbctrl/updater.sh";
-    m_process.start(m_shell);
+    system(m_shell);
 }
 
 void Upgrader::updateServo(){

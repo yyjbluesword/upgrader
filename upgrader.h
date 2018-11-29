@@ -13,11 +13,13 @@ class Upgrader : public QObject
     Q_OBJECT
     Q_PROPERTY(QString progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QString message READ message NOTIFY messageChanged)
+    Q_PROPERTY(QString operateType READ operateType NOTIFY operateTypeChanged)
 public:
     explicit Upgrader(QObject *parent = nullptr);
 
     QString progress() const { return QString::number(m_progress,'f',2); }
     QString message() const {return m_message; }
+    QString operateType() const {return m_operateType;}
 
     void updateKernel();
     void updateServo();
@@ -34,6 +36,7 @@ signals:
     void messageChanged(QString);
     void marqueeStart();
     void marqueeFinish();
+    void operateTypeChanged(QString);
 
 protected:
     void exitCount();

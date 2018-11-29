@@ -13,6 +13,11 @@ Window {
     property int timeCount: 0;
     Rectangle{
         anchors.fill: parent;
+        Label{
+            x: 0; y: 0;
+            text: upgrader.operateType
+        }
+
         Image{
             id: symble
             anchors{
