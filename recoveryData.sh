@@ -21,9 +21,23 @@ case "$1" in
 	cp ${jbiPath}/*.jbi /rbctrl/program/
 	;;
   recoveryDatabase)
-	echo "backupDatabase..."
+	echo "recovery Database ..."
+	cd /rbctrl
+	/etc/init.d/rbctrl.sh stop
+	cp /mnt/udisk/db/parameters.bak /update
+	sleep 1
+	export OPERATE_TYPE=recoveryDatabase
+	./upgrader -plugin rbteach -plugin tslib &
+	;;
+  recoveryFactoryApplication)
+	echo "recovery factory application ..."
+	cd /update
+	/etc/init.d/rbctrl.sh stop
+	sleep 1
+	export OPERATE_TYPE=recoveryFactoryApplication
+	./upgrader -plugin rbteach -plugin tslib &
 	;;
   *)
-	echo "Usage: $0 {recoveryPLC|recoveryJBI|recoveryDatabase}"
+	echo "Usage: $0 {recoveryPLC|recoveryJBI|recoveryDatabase|recoveryFactoryApplication}"
 	;;
 esac

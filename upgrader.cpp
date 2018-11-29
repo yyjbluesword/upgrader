@@ -46,7 +46,11 @@ void Upgrader::start(){
     }else if(m_operateType.compare("backupFactoryApplication") == 0){
         setMessage(tr("Start to backup Factory application."));
         backupFactoryApplication();
+    }else if(m_operateType.compare("recoveryDatabase") == 0){
+        setMessage(tr("start to recovery Database."));
+        recoveryDatabase();
     }else if(m_operateType.compare("recoveryFactoryApplication") == 0){
+        setMessage(tr("start to recovery Factory Application"));
         recoveryFactoryApplication();
     }
 }
@@ -111,6 +115,7 @@ void Upgrader::backupDatabase()
         ok = db_mrg.execute(&db_mrg, bak);
         if(ok == DB_OK){
             qDebug()<<"bak = "<<bak;
+            //需要将bak改名为parameters.bak
             setMessage(tr("backup Database Success"));
             marqueeFinish();
             restartAppTimer->start(5000);
@@ -129,10 +134,36 @@ void Upgrader::backupFactoryApplication()
     marqueeStart();
     ::system("/update/backupFactoryApplication.sh");
 }
+
+//function: 恢复数据库数据
+void Upgrader::recoveryDatabase()
+{
+    marqueeStart();
+    db_manager db_mrg;
+    const char *bak="/update/parameters.bak";
+    char cmds[256] = {0};
+    const char *CONN_STRINGS = "/rbctrl/db/elibotDB.db";
+    const char *DB_DIR = "/rbctrl/db";
+    sprintf(cmds, "%s", "elibot.bak.backupParams");
+    int ok = new_restore_db_manager(CONN_STRINGS, DB_DIR, bak, &db_mrg, 0);
+    if (ok == DB_OK) {
+        ok = db_mrg.execute(&db_mrg, NULL);
+        if (ok == DB_OK) {
+            setMessage(tr("recovery Database Success"));
+            marqueeFinish();
+            rebootTimer->start(5000);
+            return;
+        }
+    }
+    setMessage(tr("recovery Database Failed."));
+    marqueeFinish();
+    rebootTimer->start(5000);
+}
+
 void Upgrader::recoveryFactoryApplication()
 {
-    //m_shell = "/update/recovery.sh";
-    //m_process.start(m_shell);
+    marqueeStart();
+    ::system("/update/recoveryFactoryApplication.sh");
 }
 
 /*void Upgrader::updateProgress(){
@@ -168,14 +199,15 @@ void Upgrader::updateMessage(const QString msg){
 //function : 系统重启函数
 void Upgrader::rebootSystem()
 {
-    //marqueeFinish();
     rebootTimer->setInterval(1000);
     m_exitCounter--;
     if(m_exitCounter == 0){
         setMessage(tr("System rebooting"));
         rebootTimer->stop();
-        if(m_operateType == "upgradeDatabase"){
+        if(m_operateType.compare("upgradeDatabase") == 0){
             ::system("/update/upgradeDatabase.sh");
+        }else if(m_operateType.compare("recoveryDatabase") == 0){
+            ::system(("/update/recoveryDatabase.sh"));
         }else{
             ::system("reboot");
         }

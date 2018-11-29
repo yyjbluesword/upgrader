@@ -33,6 +33,7 @@ public:
     void updateDatabase();
     void backupDatabase();
     void backupFactoryApplication();
+    void recoveryDatabase();
     void recoveryFactoryApplication();
 
 

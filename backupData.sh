@@ -33,7 +33,7 @@ case "$1" in
   backupFactoryApplication)
 	echo "backup facotry appliction ..."
 	cd /rbctrl
-	killall -9 cobot
+	/etc/init.d/rbctrl.sh stop
 	sleep 1
 	export OPERATE_TYPE=backupFactoryApplication
 	./upgrader -plugin rbteach -plugin tslib &
