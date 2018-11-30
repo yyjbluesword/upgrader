@@ -28,7 +28,6 @@ Upgrader::Upgrader(QObject *parent) : QObject(parent)
     //statusTimer->setInterval(1000);
     connect(&statusThread,SIGNAL(statusChanged(QString)),
             this,SLOT(updateStatus(QString)));
-    //statusThread.start();
 }
 
 //function : QML创建完成后调用程序
@@ -37,7 +36,9 @@ void Upgrader::start()
     marqueeStart();
     if(m_operateType.compare("upgradeKernel") == 0 ||
             m_operateType.compare("upgradeDatabase") == 0 ||
-            m_operateType.compare("backupDatabase") == 0){
+            m_operateType.compare("backupDatabase") == 0 ||
+            m_operateType.compare("backupFactoryApplication") == 0 ||
+            m_operateType.compare("recoveryDatabase") == 0){
         statusThread.start();
     }
 }
@@ -46,7 +47,9 @@ void Upgrader::updateStatus(QString status){
     setMessage(status);
     if(status.contains("success",Qt::CaseInsensitive)|| status.contains("failed",Qt::CaseInsensitive)){
         if(m_operateType.compare("upgradeKernel") == 0 ||
-                m_operateType.compare("upgradeDatabase") == 0){
+                m_operateType.compare("upgradeDatabase") == 0 ||
+                m_operateType.compare("backupFactoryApplication") == 0 ||
+                m_operateType.compare("recoveryDatabase") == 0){
             marqueeFinish();
             rebootTimer->start(5000);
         }else if(m_operateType.compare("backupDatabase") == 0){
@@ -55,148 +58,15 @@ void Upgrader::updateStatus(QString status){
         }
     }
 }
-
-
-
-/*
-
-void Upgrader::start(){
-    if(m_operateType.compare("upgradeKernel") == 0){
-        updateKernel();
-    }else if(m_operateType.compare("upgradeServo") == 0){
-        //updateServo();
-    }else if(m_operateType.compare("upgradeApplication") == 0){
-        //updateApplication();
-    }else if(m_operateType.compare("upgradeDatabase") == 0){
-        setMessage(tr("Strart to upgrade Database."));
-        updateDatabase();
-    }else if(m_operateType.compare("backupDatabase") == 0){
-        setMessage(tr("Start to backup Database"));
-        backupDatabase();
-    }else if(m_operateType.compare("backupFactoryApplication") == 0){
-        setMessage(tr("Start to backup Factory application."));
-        backupFactoryApplication();
-    }else if(m_operateType.compare("recoveryDatabase") == 0){
-        setMessage(tr("start to recovery Database."));
-        recoveryDatabase();
-    }else if(m_operateType.compare("recoveryFactoryApplication") == 0){
-        setMessage(tr("start to recovery Factory Application"));
-        recoveryFactoryApplication();
-    }
-    statusThread.run();
-}
-*/
-
-/*
-//function : 升级内核程序
-void Upgrader::updateKernel(){
-
-    //marqueeStart();
-    statusThread.run();
-
-}
-*/
-
-/*
-void Upgrader::updateServo(){
-    qDebug()<<"updateServo was invoked!!!!!\n";
-    m_shell = "echo update servo";
-    //m_process.start(m_shell);
-}
-*/
-
-/*
-void Upgrader::updateApplication(){
-    m_shell = "echo update Application";
-    //m_process.start(m_shell.data());
-}
-*/
-
-
-
-
-
-/*
-//function : 备份出厂应用程序
-void Upgrader::backupFactoryApplication()
-{
-
-    marqueeStart();
-    ::system("/update/backupFactoryApplication.sh");
-
-}
-*/
-
 /*
 //function: 恢复数据库数据
 void Upgrader::recoveryDatabase()
 {
 
-    marqueeStart();
-    db_manager db_mrg;
-    const char *bak="/update/parameters.bak";
-    char cmds[256] = {0};
-    const char *CONN_STRINGS = "/rbctrl/db/elibotDB.db";
-    const char *DB_DIR = "/rbctrl/db";
-    sprintf(cmds, "%s", "elibot.bak.backupParams");
-    int ok = new_restore_db_manager(CONN_STRINGS, DB_DIR, bak, &db_mrg, 0);
-    if (ok == DB_OK) {
-        ok = db_mrg.execute(&db_mrg, NULL);
-        if (ok == DB_OK) {
-            setMessage(tr("recovery Database Success"));
-            marqueeFinish();
-            rebootTimer->start(5000);
-            return;
-        }
-    }
-    setMessage(tr("recovery Database Failed."));
-    marqueeFinish();
-    rebootTimer->start(5000);
+
 
 }
 */
-
-/*
-void Upgrader::recoveryFactoryApplication()
-{
-
-    marqueeStart();
-    ::system("/update/recoveryFactoryApplication.sh");
-
-}
-*/
-
-/*void Upgrader::updateProgress(){
-    QByteArray line;
-    while(!m_process.atEnd()){
-        line = m_process.readLine();
-        QRegularExpression re("progress ([0-9]*\\.?[0-9]+)%");
-        QRegularExpressionMatch match = re.match(line);
-        if(!match.hasMatch()){
-            updateMessage(line);
-            continue;
-        }
-        bool ok;
-        double progress = match.capturedRef(1).toDouble(&ok);
-        if(!ok)
-            continue;
-        if(qAbs(progress-m_progress) > 0.0001){
-            m_progress = progress;
-            emit progressChanged(progress);
-        }
-    }
-
-}*/
-/*
-void Upgrader::updateMessage(const QString msg){
-    if(msg==m_message)
-        return;
-    m_message = msg;
-    //emit messageChanged(m_message);
-}
-*/
-
-
 //function : 系统重启函数
 void Upgrader::rebootSystem()
 {
@@ -219,7 +89,6 @@ void Upgrader::rebootSystem()
 
 }
 
-
 //function : 应用重启程序函数
 void Upgrader::restartApp(){
 
@@ -236,74 +105,36 @@ void Upgrader::restartApp(){
 
 }
 
-//function: 监事系统环境变量，显示当前状态
-
-/*
-void Upgrader::updateStatus(QString status){
-    setMessage(status);
-
-    QString operateStatus = qgetenv("OPERATE_STATUS");
-    if(m_operateStatus.compare(operateStatus) == 0)
-        return;
-    m_operateStatus = operateStatus;
-    if(operateStatus.compare("OPERATEING")){
-        if(m_operateType.compare("backupFactoryApplication") == 0){
-            setMessage(tr("backup Factory Application"));
-        }
-    }else if(operateStatus.compare("OPERATEOVER") == 0){
-        marqueeFinish();
-        if(m_operateType.compare("backupFactoryApplication") == 0){
-            setMessage(tr("backup Factory Application finished."));
-        }
-    }else if(operateStatus.compare("OPERATEERR") == 0){
-
-    }else{
-        m_exitCounter = 4;
-        rebootTimer->start(5000);
-    }
-}
-*/
-
-/*void Upgrader::processStarted(){
-    emit marqueeStart();
-}*/
-
-
-/*
-void Upgrader::updateFinished(int exitCode){
-    emit marqueeFinish();
-    m_exitCounter = 4;
-    rebootTimer->start(5000);
-}*/
-
-/*
-void Upgrader::processError(QProcess::ProcessError error)
-{
-    qDebug()<<"processError error num is "<<error;
-    updateMessage(tr("Failure to start an external process!!!"));
-}
-*/
-
 void MyThread::run(){
     QString m_operateType = qgetenv("OPERATE_TYPE");
     if(m_operateType.compare("upgradeKernel") == 0){
-        FILE *fpRead;
-        fpRead = popen("/update/upgradeKernel.sh","r");
-        char buf[1024];
-        memset(buf,'\0',sizeof(buf));
-        while(fgets(buf,1024-1,fpRead) != NULL)
-        {
-            QString buffer(buf);
-            emit statusChanged(buffer);
-            memset(buf,0x00,sizeof(buf));
-        }
-        if(fpRead != NULL)
-            pclose(fpRead);
+        executeShell("/update/upgradeKernel.sh");
     }else if(m_operateType.compare("upgradeDatabase") == 0){
         upgradeDatabase();
     }else if(m_operateType.compare("backupDatabase") == 0){
         backupDatabase();
+    }else if(m_operateType.compare("backupFactoryApplication") == 0){
+        executeShell("/update/backupFactoryApplication.sh");
+    }else if(m_operateType.compare("recoveryDatabase") == 0){
+        recoveryDatabase();
     }
+}
+
+//function : 升级内核接口
+void MyThread::executeShell(const char *shell)
+{
+    FILE *fpRead;
+    fpRead = popen(shell,"r");
+    char buf[1024];
+    memset(buf,'\0',sizeof(buf));
+    while(fgets(buf,1024-1,fpRead) != NULL)
+    {
+        QString buffer(buf);
+        emit statusChanged(buffer);
+        memset(buf,0x00,sizeof(buf));
+    }
+    if(fpRead != NULL)
+        pclose(fpRead);
 }
 
 //function : 升级数据库接口
@@ -347,5 +178,26 @@ void MyThread::backupDatabase()
         }
     }
     emit statusChanged(tr("Backup Database Failed!"));
+}
+
+//function : 恢复数据库数据
+void MyThread::recoveryDatabase()
+{
+    emit statusChanged(tr("start to recovery database."));
+    db_manager db_mrg;
+    const char *bak="/mnt/udisk/rbctrl/db/parameters.bak";
+    char cmds[256] = {0};
+    const char *CONN_STRINGS = "/rbctrl/db/elibotDB.db";
+    const char *DB_DIR = "/rbctrl/db";
+    sprintf(cmds, "%s", "elibot.bak.backupParams");
+    int ok = new_restore_db_manager(CONN_STRINGS, DB_DIR, bak, &db_mrg, 0);
+    if (ok == DB_OK) {
+        ok = db_mrg.execute(&db_mrg, NULL);
+        if (ok == DB_OK) {
+            emit statusChanged(tr("Recovery Database Success!"));
+            return;
+        }
+    }
+    emit statusChanged(tr("Recovery Database Failed!"));
 }
 

@@ -31,7 +31,7 @@ case "$1" in
 	cd ..
 	;;
   backupFactoryApplication)
-	echo "backup facotry appliction ..."
+	echo "backup factory appliction ..."
 	cd /rbctrl
 	/etc/init.d/rbctrl.sh stop
 	sleep 1

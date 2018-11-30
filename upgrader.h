@@ -13,8 +13,11 @@ class MyThread : public QThread
     Q_OBJECT
 public:
     void run();
+    void executeShell(const char *shell);
     void upgradeDatabase();
     void backupDatabase();
+    void backupFactoryApplication();
+    void recoveryDatabase();
 signals:
     void statusChanged(QString status);
 };
