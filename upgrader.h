@@ -13,6 +13,8 @@ class MyThread : public QThread
     Q_OBJECT
 public:
     void run();
+    void upgradeDatabase();
+    void backupDatabase();
 signals:
     void statusChanged(QString status);
 };
@@ -27,7 +29,7 @@ public:
     void updateKernel();
     //void updateServo();
     //void updateApplication();
-    //void updateDatabase();
+    //void upgradeDatabase();
     //void backupDatabase();
     //void backupFactoryApplication();
     //void recoveryDatabase();

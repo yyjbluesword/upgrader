@@ -28,25 +28,35 @@ Upgrader::Upgrader(QObject *parent) : QObject(parent)
     //statusTimer->setInterval(1000);
     connect(&statusThread,SIGNAL(statusChanged(QString)),
             this,SLOT(updateStatus(QString)));
-    statusThread.start();
+    //statusThread.start();
 }
 
 //function : QML创建完成后调用程序
 void Upgrader::start()
 {
     marqueeStart();
-    statusThread.start();
+    if(m_operateType.compare("upgradeKernel") == 0 ||
+            m_operateType.compare("upgradeDatabase") == 0 ||
+            m_operateType.compare("backupDatabase") == 0){
+        statusThread.start();
+    }
 }
 
 void Upgrader::updateStatus(QString status){
     setMessage(status);
     if(status.contains("success",Qt::CaseInsensitive)|| status.contains("failed",Qt::CaseInsensitive)){
-        if(m_operateType.compare("upgradeKernel") == 0){
+        if(m_operateType.compare("upgradeKernel") == 0 ||
+                m_operateType.compare("upgradeDatabase") == 0){
             marqueeFinish();
             rebootTimer->start(5000);
+        }else if(m_operateType.compare("backupDatabase") == 0){
+            marqueeFinish();
+            restartAppTimer->start(5000);
         }
     }
 }
+
+
 
 /*
 
@@ -102,64 +112,9 @@ void Upgrader::updateApplication(){
 }
 */
 
-/*
-//function : 升级数据库函数接口
-void Upgrader::updateDatabase(){
 
-    marqueeStart();
-    db_manager db_mrg;
-    const char *upgrade_pkg = "/update/elibotDB.upgrade.pkg";
-    const char *CONN_STRINGS = "/rbctrl/db/elibotDB.db";
-    const char *DB_DIR = "/rbctrl/db";
-    int ok = new_upgrade_db_manager(CONN_STRINGS, DB_DIR, upgrade_pkg, &db_mrg);
-    if(ok == DB_OK){
-        ok = db_mrg.execute(&db_mrg, NULL);
-        if(ok == DB_OK){
-            setMessage(tr("Update Database Success!"));
-            marqueeFinish();
-            rebootTimer->start(5000);
-            return;
-        }
-    }
-    setMessage(tr("Update Database Failed!"));
-    marqueeFinish();
-    rebootTimer->start(5000);
 
-}
-*/
 
-/*
-//function : 备份数据库数据
-void Upgrader::backupDatabase()
-{
-
-    marqueeStart();
-    db_manager db_mrg;
-    const char *CONN_STRINGS = "/rbctrl/db/elibotDB.db";
-    const char *DB_DIR = "/mnt/udisk/db";
-    const char *ELIBOT_BAK_BACKUP_PARAMS = "elibot.bak.backupParams";
-    char bak[256] = {0};
-    char cmds[256] = {0};
-    sprintf(cmds, "%s", ELIBOT_BAK_BACKUP_PARAMS);
-    int ok = new_backup_db_manager(CONN_STRINGS, DB_DIR, &db_mrg);
-    if(ok == DB_OK){
-        set_cmds(&db_mrg, cmds);
-        ok = db_mrg.execute(&db_mrg, bak);
-        if(ok == DB_OK){
-            qDebug()<<"bak = "<<bak;
-            setMessage(tr("backup Database Success"));
-            marqueeFinish();
-            restartAppTimer->start(5000);
-            return;
-        }
-    }
-    setMessage(tr("backup Database failed"));
-    marqueeFinish();
-    restartAppTimer->start(5000);
-    return;
-
-}
-*/
 
 /*
 //function : 备份出厂应用程序
@@ -342,10 +297,55 @@ void MyThread::run(){
             emit statusChanged(buffer);
             memset(buf,0x00,sizeof(buf));
         }
-        if(fpRead != NULL){
+        if(fpRead != NULL)
             pclose(fpRead);
-            qDebug()<<"fpRead has been closed!!!!!!!!!!!!!";
+    }else if(m_operateType.compare("upgradeDatabase") == 0){
+        upgradeDatabase();
+    }else if(m_operateType.compare("backupDatabase") == 0){
+        backupDatabase();
+    }
+}
+
+//function : 升级数据库接口
+void MyThread::upgradeDatabase()
+{
+    emit statusChanged(tr("start to upgrade database."));
+    db_manager db_mrg;
+    const char *upgrade_pkg = "/update/elibotDB.upgrade.pkg";
+    const char *CONN_STRINGS = "/rbctrl/db/elibotDB.db";
+    const char *DB_DIR = "/rbctrl/db";
+    int ok = new_upgrade_db_manager(CONN_STRINGS, DB_DIR, upgrade_pkg, &db_mrg);
+    if(ok == DB_OK){
+        ok = db_mrg.execute(&db_mrg, NULL);
+        if(ok == DB_OK){
+            emit statusChanged(tr("Upgrade Database Success!"));
+            return;
         }
     }
+    emit statusChanged(tr("Upgrade Database Failed!"));
+}
+
+//function : 备份数据库数据
+void MyThread::backupDatabase()
+{
+    emit statusChanged(tr("start to backup database."));
+    db_manager db_mrg;
+    const char *CONN_STRINGS = "/rbctrl/db/elibotDB.db";
+    const char *DB_DIR = "/mnt/udisk/rbctrl/db";
+    const char *ELIBOT_BAK_BACKUP_PARAMS = "elibot.bak.backupParams";
+    char bak[256] = {0};
+    char cmds[256] = {0};
+    sprintf(cmds, "%s", ELIBOT_BAK_BACKUP_PARAMS);
+    int ok = new_backup_db_manager(CONN_STRINGS, DB_DIR, &db_mrg);
+    if(ok == DB_OK){
+        set_cmds(&db_mrg, cmds);
+        ok = db_mrg.execute(&db_mrg, bak);
+        if(ok == DB_OK){
+            qDebug()<<"bak = "<<bak;
+            emit statusChanged(tr("Backup Database Success!"));
+            return;
+        }
+    }
+    emit statusChanged(tr("Backup Database Failed!"));
 }
 
