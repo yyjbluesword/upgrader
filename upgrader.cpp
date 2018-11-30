@@ -11,27 +11,47 @@
 
 Upgrader::Upgrader(QObject *parent) : QObject(parent)
 {
+
     rebootTimer = new QTimer(this);
     restartAppTimer = new QTimer(this);
-    statusTimer = new QTimer(this);
+    //statusTimer = new QTimer(this);
     m_operateType = qgetenv("OPERATE_TYPE");
     m_exitCounter = 4;
-    qDebug()<<"m_operateType = "<<m_operateType;
-    m_operateStatus = "NOOPERATE";
+
     connect(rebootTimer, SIGNAL(timeout()),
             this, SLOT(rebootSystem()));
     connect(restartAppTimer, SIGNAL(timeout()),
             this, SLOT(restartApp()));
-    connect(statusTimer,SIGNAL(timeout()),
-            this, SLOT(updateStatus()));
-    statusTimer->start(5000);
-    statusTimer->setInterval(100);
+    /*connect(statusTimer,SIGNAL(timeout()),
+            this, SLOT(updateStatus()));*/
+    //statusTimer->start(5000);
+    //statusTimer->setInterval(1000);
+    connect(&statusThread,SIGNAL(statusChanged(QString)),
+            this,SLOT(updateStatus(QString)));
+    statusThread.start();
 }
 
 //function : QML创建完成后调用程序
+void Upgrader::start()
+{
+    marqueeStart();
+    statusThread.start();
+}
+
+void Upgrader::updateStatus(QString status){
+    setMessage(status);
+    if(status.contains("success",Qt::CaseInsensitive)|| status.contains("failed",Qt::CaseInsensitive)){
+        if(m_operateType.compare("upgradeKernel") == 0){
+            marqueeFinish();
+            rebootTimer->start(5000);
+        }
+    }
+}
+
+/*
+
 void Upgrader::start(){
     if(m_operateType.compare("upgradeKernel") == 0){
-        setMessage(tr("Start to upgrade Kernel."));
         updateKernel();
     }else if(m_operateType.compare("upgradeServo") == 0){
         //updateServo();
@@ -53,13 +73,19 @@ void Upgrader::start(){
         setMessage(tr("start to recovery Factory Application"));
         recoveryFactoryApplication();
     }
+    statusThread.run();
 }
+*/
 
+/*
 //function : 升级内核程序
 void Upgrader::updateKernel(){
-    marqueeStart();
-    system("/update/upgradeKernel.sh");
+
+    //marqueeStart();
+    statusThread.run();
+
 }
+*/
 
 /*
 void Upgrader::updateServo(){
@@ -76,8 +102,10 @@ void Upgrader::updateApplication(){
 }
 */
 
+/*
 //function : 升级数据库函数接口
 void Upgrader::updateDatabase(){
+
     marqueeStart();
     db_manager db_mrg;
     const char *upgrade_pkg = "/update/elibotDB.upgrade.pkg";
@@ -96,11 +124,15 @@ void Upgrader::updateDatabase(){
     setMessage(tr("Update Database Failed!"));
     marqueeFinish();
     rebootTimer->start(5000);
-}
 
+}
+*/
+
+/*
 //function : 备份数据库数据
 void Upgrader::backupDatabase()
 {
+
     marqueeStart();
     db_manager db_mrg;
     const char *CONN_STRINGS = "/rbctrl/db/elibotDB.db";
@@ -115,7 +147,6 @@ void Upgrader::backupDatabase()
         ok = db_mrg.execute(&db_mrg, bak);
         if(ok == DB_OK){
             qDebug()<<"bak = "<<bak;
-            //需要将bak改名为parameters.bak
             setMessage(tr("backup Database Success"));
             marqueeFinish();
             restartAppTimer->start(5000);
@@ -126,18 +157,26 @@ void Upgrader::backupDatabase()
     marqueeFinish();
     restartAppTimer->start(5000);
     return;
-}
 
+}
+*/
+
+/*
 //function : 备份出厂应用程序
 void Upgrader::backupFactoryApplication()
 {
+
     marqueeStart();
     ::system("/update/backupFactoryApplication.sh");
-}
 
+}
+*/
+
+/*
 //function: 恢复数据库数据
 void Upgrader::recoveryDatabase()
 {
+
     marqueeStart();
     db_manager db_mrg;
     const char *bak="/update/parameters.bak";
@@ -158,13 +197,19 @@ void Upgrader::recoveryDatabase()
     setMessage(tr("recovery Database Failed."));
     marqueeFinish();
     rebootTimer->start(5000);
-}
 
+}
+*/
+
+/*
 void Upgrader::recoveryFactoryApplication()
 {
+
     marqueeStart();
     ::system("/update/recoveryFactoryApplication.sh");
+
 }
+*/
 
 /*void Upgrader::updateProgress(){
     QByteArray line;
@@ -196,9 +241,11 @@ void Upgrader::updateMessage(const QString msg){
 }
 */
 
+
 //function : 系统重启函数
 void Upgrader::rebootSystem()
 {
+
     rebootTimer->setInterval(1000);
     m_exitCounter--;
     if(m_exitCounter == 0){
@@ -214,10 +261,13 @@ void Upgrader::rebootSystem()
         return;
     }
     setMessage(tr("System will reboot in %1s").arg(m_exitCounter));
+
 }
 
-//function : 重启应用程序函数
+
+//function : 应用重启程序函数
 void Upgrader::restartApp(){
+
     restartAppTimer->setInterval(1000);
     m_exitCounter--;
     if(m_exitCounter == 0){
@@ -228,33 +278,36 @@ void Upgrader::restartApp(){
         return;
     }
     setMessage(tr("App will reboot in %1s").arg(m_exitCounter));
+
 }
 
 //function: 监事系统环境变量，显示当前状态
-void Upgrader::updateStatus(){
+
+/*
+void Upgrader::updateStatus(QString status){
+    setMessage(status);
+
     QString operateStatus = qgetenv("OPERATE_STATUS");
-    //qDebug()<<"operateStatus = "<<operateStatus;
     if(m_operateStatus.compare(operateStatus) == 0)
         return;
     m_operateStatus = operateStatus;
     if(operateStatus.compare("OPERATEING")){
-        if(m_operateType.compare("upgradeKernel") == 0){
-            setMessage(tr("upgarding kernel"));
-        }else if(m_operateType.compare("backupFactoryApplication") == 0){
+        if(m_operateType.compare("backupFactoryApplication") == 0){
             setMessage(tr("backup Factory Application"));
         }
     }else if(operateStatus.compare("OPERATEOVER") == 0){
         marqueeFinish();
-        if(m_operateType.compare("upgradeKernel") == 0){
-            setMessage(tr("upgrading kernel finished"));
-        }else if(m_operateType.compare("backupFactoryApplication") == 0){
+        if(m_operateType.compare("backupFactoryApplication") == 0){
             setMessage(tr("backup Factory Application finished."));
         }
-        qputenv("OPERATE_STATUS","NOOPERATE");
+    }else if(operateStatus.compare("OPERATEERR") == 0){
+
+    }else{
         m_exitCounter = 4;
         rebootTimer->start(5000);
     }
 }
+*/
 
 /*void Upgrader::processStarted(){
     emit marqueeStart();
@@ -275,3 +328,24 @@ void Upgrader::processError(QProcess::ProcessError error)
     updateMessage(tr("Failure to start an external process!!!"));
 }
 */
+
+void MyThread::run(){
+    QString m_operateType = qgetenv("OPERATE_TYPE");
+    if(m_operateType.compare("upgradeKernel") == 0){
+        FILE *fpRead;
+        fpRead = popen("/update/upgradeKernel.sh","r");
+        char buf[1024];
+        memset(buf,'\0',sizeof(buf));
+        while(fgets(buf,1024-1,fpRead) != NULL)
+        {
+            QString buffer(buf);
+            emit statusChanged(buffer);
+            memset(buf,0x00,sizeof(buf));
+        }
+        if(fpRead != NULL){
+            pclose(fpRead);
+            qDebug()<<"fpRead has been closed!!!!!!!!!!!!!";
+        }
+    }
+}
+

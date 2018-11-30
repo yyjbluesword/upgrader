@@ -67,11 +67,10 @@ Window {
                     color: showColor[timeCount >= 3 ? 1 : 0];
                     anchors.verticalCenter: parent.verticalCenter;
                 }
-                Rectangle{
+                /*Rectangle{
                     width: 12;height: 12;
                     color: "transparent";
                 }
-                /*
                 Label{
                     id: progressValue
                     font{
