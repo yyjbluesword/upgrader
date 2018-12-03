@@ -18,7 +18,7 @@ public:
     void backupDatabase();
     void backupFactoryApplication();
     void recoveryDatabase();
-    QString translate(QString source);
+    void showTranslate(QString source);
 signals:
     void statusChanged(QString status);
 };
@@ -30,6 +30,7 @@ class Upgrader : public QObject
 public:
     explicit Upgrader(QObject *parent = nullptr);
     QString message() const {return m_message; }
+    void showTranslate(QString source);
     void updateKernel();
     //void updateServo();
     //void updateApplication();

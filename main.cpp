@@ -9,9 +9,9 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    //QTranslator translator;
-    //translator.load(":/lang/zh_CN.qm");
-    //app.installTranslator(&translator);
+    QTranslator translator;
+    translator.load(":/lang/zh_CN.qm");
+    app.installTranslator(&translator);
 
     Upgrader *upgrader = new Upgrader();
     QQmlApplicationEngine engine;

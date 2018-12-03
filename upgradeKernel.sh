@@ -8,6 +8,7 @@ cpKernelFile()
 	cp /mnt/udisk/rbctrl/update/upgradeKernel.eku .
 	if [ $? -ne 0 ]; then
 		echo "Prepare upgrade kernel failed."
+		echo "failed"
 		sleep 2
 		exit 1
 	fi
@@ -23,7 +24,8 @@ update()
 	sleep 2
 	./upgradeKernel.eku
 	if [ $? -ne 0 ]; then
-		echo "upgrade kernel failed."
+		echo "Upgrade kernel failed."
+		echo "failed"
 		sleep 2
 		exit 2
 	fi
@@ -37,7 +39,8 @@ delTmpFile()
 	cd /update
 	rm upgradeKernel.eku
 	if [ $? -ne 0 ]; then
-		echo "remove temporary data failed."
+		echo "Delete temporary data failed."
+		echo "failed"
 		sleep 2
 		exit 3
 	fi
@@ -47,7 +50,8 @@ delTmpFile()
 cpKernelFile
 update
 delTmpFile
-echo "upgrade kernel success."
+echo "Upgrade kernel success."
+echo "success"
 sleep 2
 
 

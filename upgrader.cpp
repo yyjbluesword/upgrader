@@ -14,7 +14,6 @@ Upgrader::Upgrader(QObject *parent) : QObject(parent)
 
     rebootTimer = new QTimer(this);
     restartAppTimer = new QTimer(this);
-    //statusTimer = new QTimer(this);
     m_operateType = qgetenv("OPERATE_TYPE");
     m_exitCounter = 4;
 
@@ -22,10 +21,6 @@ Upgrader::Upgrader(QObject *parent) : QObject(parent)
             this, SLOT(rebootSystem()));
     connect(restartAppTimer, SIGNAL(timeout()),
             this, SLOT(restartApp()));
-    /*connect(statusTimer,SIGNAL(timeout()),
-            this, SLOT(updateStatus()));*/
-    //statusTimer->start(5000);
-    //statusTimer->setInterval(1000);
     connect(&statusThread,SIGNAL(statusChanged(QString)),
             this,SLOT(updateStatus(QString)));
 }
@@ -44,8 +39,7 @@ void Upgrader::start()
 }
 
 void Upgrader::updateStatus(QString status){
-    setMessage(status);
-    if(status.contains(tr("success"),Qt::CaseInsensitive)|| status.contains(tr("failed"),Qt::CaseInsensitive)){
+    if(status.compare("success") == 0){
         if(m_operateType.compare("upgradeKernel") == 0 ||
                 m_operateType.compare("upgradeDatabase") == 0 ||
                 m_operateType.compare("backupFactoryApplication") == 0 ||
@@ -56,17 +50,14 @@ void Upgrader::updateStatus(QString status){
             marqueeFinish();
             restartAppTimer->start(5000);
         }
+        return;
+    }else if(status.compare("failed") == 0){
+        marqueeFinish();
+        return;
     }
+    setMessage(status);
 }
-/*
-//function: 恢复数据库数据
-void Upgrader::recoveryDatabase()
-{
 
-
-
-}
-*/
 //function : 系统重启函数
 void Upgrader::rebootSystem()
 {
@@ -105,10 +96,30 @@ void Upgrader::restartApp(){
 
 }
 
+//function : Shell中翻译转换
+void Upgrader::showTranslate(QString source){
+    if(source.compare("Prepare to upgrade kernel.") == 0)
+        setMessage(tr("Prepare to upgrade kernel."));
+    else if(source.compare("Prepare upgrade kernel failed.") == 0)
+        setMessage(tr("Prepare upgrade kernel failed."));
+    else if(source.compare("Start to upgrade kernel.") == 0)
+        setMessage(tr("Start to upgrade kernel."));
+    else if(source.compare("Upgrade kernel failed.") == 0)
+        setMessage(tr("Upgrade kernel failed."));
+    else if(source.compare("Delete temporary data.") == 0)
+        setMessage(tr("Delete temporary data."));
+    else if(source.compare("Delete temporary data failed.") == 0)
+        setMessage(tr("Delete temporary data failed."));
+    else if(source.compare("Upgrade kernel success.") == 0)
+        setMessage(tr("Upgrade kernel success."));
+}
+
 void MyThread::run(){
     QString m_operateType = qgetenv("OPERATE_TYPE");
     if(m_operateType.compare("upgradeKernel") == 0){
         executeShell("/update/upgradeKernel.sh");
+    }else if(m_operateType.compare("upgradeApplication") == 0){
+        executeShell("/update/upgradeApplication.sh /mnt/udisk");
     }else if(m_operateType.compare("upgradeDatabase") == 0){
         upgradeDatabase();
     }else if(m_operateType.compare("backupDatabase") == 0){
@@ -120,7 +131,7 @@ void MyThread::run(){
     }
 }
 
-//function : 升级内核接口
+//function : 执行Shell接口
 void MyThread::executeShell(const char *shell)
 {
     FILE *fpRead;
@@ -130,7 +141,7 @@ void MyThread::executeShell(const char *shell)
     while(fgets(buf,1024-1,fpRead) != NULL)
     {
         QString buffer(buf);
-        emit statusChanged(buffer);
+        showTranslate(buffer);
         memset(buf,0x00,sizeof(buf));
     }
     if(fpRead != NULL)
@@ -150,10 +161,12 @@ void MyThread::upgradeDatabase()
         ok = db_mrg.execute(&db_mrg, NULL);
         if(ok == DB_OK){
             emit statusChanged(tr("Upgrade Database Success!"));
+            emit statusChanged("success");
             return;
         }
     }
     emit statusChanged(tr("Upgrade Database Failed!"));
+    emit statusChanged("failed");
 }
 
 //function : 备份数据库数据
@@ -174,10 +187,12 @@ void MyThread::backupDatabase()
         if(ok == DB_OK){
             qDebug()<<"bak = "<<bak;
             emit statusChanged(tr("Backup Database Success!"));
+            emit statusChanged("success");
             return;
         }
     }
     emit statusChanged(tr("Backup Database Failed!"));
+    emit statusChanged("failed");
 }
 
 //function : 恢复数据库数据
@@ -195,8 +210,40 @@ void MyThread::recoveryDatabase()
         ok = db_mrg.execute(&db_mrg, NULL);
         if (ok == DB_OK) {
             emit statusChanged(tr("Recovery Database Success!"));
+            emit statusChanged("success");
             return;
         }
     }
     emit statusChanged(tr("Recovery Database Failed!"));
+    emit statusChanged("failed");
+}
+
+//function : 转换Shell内文本
+
+void MyThread::showTranslate(QString source)
+{
+    source.chop(1);
+    qDebug()<<"source.chop(1) = "<<source;
+    if(source.compare("Prepare to upgrade kernel.") == 0)
+        emit statusChanged(tr("Prepare to upgrade kernel."));
+    else if(source.compare("Prepare upgrade kernel failed.") == 0)
+        emit statusChanged(tr("Prepare upgrade kernel failed."));
+    else if(source.compare("Start to upgrade kernel.") == 0)
+        emit statusChanged(tr("Start to upgrade kernel."));
+    else if(source.compare("Upgrade kernel failed.") == 0)
+        emit statusChanged(tr("Upgrade kernel failed."));
+    else if(source.compare("Delete temporary data.") == 0)
+        emit statusChanged(tr("Delete temporary data."));
+    else if(source.compare("Delete temporary data failed.") == 0)
+        emit statusChanged(tr("Delete temporary data failed."));
+    else if(source.compare("Upgrade kernel success.") == 0)
+        emit statusChanged(tr("Upgrade kernel success."));
+    else if(source.compare("Start to back up Factory Application") == 0)
+        emit statusChanged(tr("Start to back up Factory Application"));
+    else if(source.compare("Backup Factory Application Failed!") == 0)
+        emit statusChanged(tr("Backup Factory Application Failed!"));
+    else if(source.compare("Backup Factory Application success.") == 0)
+        emit statusChanged(tr("Backup Factory Application success."));
+    else
+        emit statusChanged(source);
 }

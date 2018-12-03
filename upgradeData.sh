@@ -30,11 +30,13 @@ case "$1" in
 	./upgrader -plugin rbteach -plugin tslib &
 	;;
   upgradeApplication)
-#	echo "backupFactoryApplication..."
-#	/etc/init.d/rbctrl.sh stop
-#	cd /
-#	tar -xvf rbctrl.tar /rbctrl
-#	echo "backupFactoryApplication finished."
+	cd /update
+	echo "Prepare to upgrade Application"
+	/etc/init.d/rbctrl.sh stop
+	export OPERATE_TYPE=upgradeApplication
+	export OPERATE_TYPE
+#	./upgrader -plugin rbteach -plugin tslib &
+	./upgradeApplication.sh /mnt/udisk
 	;;
   *)
 	echo "Usage: $0 {upgradeKernel|upgradeServo|upgradeDatabase|upgradeApplication}"
