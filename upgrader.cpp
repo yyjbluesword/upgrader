@@ -45,7 +45,7 @@ void Upgrader::start()
 
 void Upgrader::updateStatus(QString status){
     setMessage(status);
-    if(status.contains("success",Qt::CaseInsensitive)|| status.contains("failed",Qt::CaseInsensitive)){
+    if(status.contains(tr("success"),Qt::CaseInsensitive)|| status.contains(tr("failed"),Qt::CaseInsensitive)){
         if(m_operateType.compare("upgradeKernel") == 0 ||
                 m_operateType.compare("upgradeDatabase") == 0 ||
                 m_operateType.compare("backupFactoryApplication") == 0 ||
@@ -200,4 +200,3 @@ void MyThread::recoveryDatabase()
     }
     emit statusChanged(tr("Recovery Database Failed!"));
 }
-

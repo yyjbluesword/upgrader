@@ -18,6 +18,7 @@ public:
     void backupDatabase();
     void backupFactoryApplication();
     void recoveryDatabase();
+    QString translate(QString source);
 signals:
     void statusChanged(QString status);
 };

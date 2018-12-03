@@ -48,9 +48,55 @@
         <source>Recovery Database Failed!</source>
         <translation>恢复数据库失败！</translation>
     </message>
+    <message>
+        <source>prepare to upgrade kernel</source>
+        <translation type="vanished">准备升级内核。</translation>
+    </message>
+    <message>
+        <source>prepare to upgrade Database</source>
+        <translation type="vanished">准备升级数据库。</translation>
+    </message>
+    <message>
+        <source>Prepare to upgrade kernel.</source>
+        <translation type="vanished">准备升级内核。</translation>
+    </message>
+    <message>
+        <source>Prepare upgrade kernel failed.</source>
+        <translation type="vanished">准备升级内核失败。</translation>
+    </message>
+    <message>
+        <source>Start to upgrade kernel.</source>
+        <translation type="vanished">开始升级内核。</translation>
+    </message>
+    <message>
+        <source>upgrade kernel failed.</source>
+        <translation type="vanished">升级内核失败。</translation>
+    </message>
+    <message>
+        <source>Delete temporary data.</source>
+        <translation type="vanished">删除临时数据文件。</translation>
+    </message>
+    <message>
+        <source>remove temporary data failed.</source>
+        <translation type="vanished">删除临时数据文件失败。</translation>
+    </message>
+    <message>
+        <source>upgrade kernel success.</source>
+        <translation type="vanished">升级内核失败。</translation>
+    </message>
 </context>
 <context>
     <name>Upgrader</name>
+    <message>
+        <location filename="../upgrader.cpp" line="48"/>
+        <source>success</source>
+        <translation>成功</translation>
+    </message>
+    <message>
+        <location filename="../upgrader.cpp" line="48"/>
+        <source>failed</source>
+        <translation>失败</translation>
+    </message>
     <message>
         <location filename="../upgrader.cpp" line="77"/>
         <source>System rebooting</source>
