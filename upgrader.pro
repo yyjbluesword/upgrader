@@ -41,7 +41,7 @@ unix:!macx: LIBS += -L$$PWD/../mcserver/plugin/sqlitedb/ -lsqlitedb
 INCLUDEPATH += $$PWD/../mcserver/plugin/sqlitedb
 DEPENDPATH += $$PWD/../mcserver/plugin/sqlitedb
 
-TRANSLATIONS = zh_CN.ts
+TRANSLATIONS = lang/zh_CN.ts
 
 lupdateonly {
     SOURCES += *.qml *.cpp

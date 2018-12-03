@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
     QTranslator translator;
-    translator.load(":/zh_CN.qm");
+    translator.load(":/lang/zh_CN.qm");
     app.installTranslator(&translator);
 
     Upgrader *upgrader = new Upgrader();

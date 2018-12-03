@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>images/updateSymble.png</file>
+        <file>lang/zh_CN.qm</file>
     </qresource>
 </RCC>
