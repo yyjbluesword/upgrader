@@ -2,14 +2,13 @@
 plcPath="/mnt/udisk/rbctrl/data/user/"
 jbiPath="/mnt/udisk/rbctrl/program/"
 kernelPath="/mnt/udisk/updata/"
+upgraderPath="/update"
 case "$1" in
   upgradeKernel)
-	cd /rbctrl
+	cd $upgraderPath
 	echo "prepare to upgrade kernel"
 	/etc/init.d/rbctrl.sh stop
-	export OPERATE_TYPE=upgradeKernel
-	export OPERATE_TYPE
-	./upgrader -plugin rbteach -plugin tslib &
+	./upgrader $1 -plugin rbteach -plugin tslib &
 	;;
   upgradeServo)
 #	echo "backup jbi files ..."
@@ -21,22 +20,18 @@ case "$1" in
 #	cp /rbctrl/*.jbi $jbiPath
 	;;
   upgradeDatabase)
-	cd /rbctrl
+	cd $upgraderPath
 	echo "prepare to upgrade Database"
 	cp /mnt/udisk/rbctrl/db/elibotDB.upgrade.pkg /update
 	/etc/init.d/rbctrl.sh stop
-	export OPERATE_TYPE=upgradeDatabase
-	export OPERATE_TYPE
-	./upgrader -plugin rbteach -plugin tslib &
+	./upgrader $1 -plugin rbteach -plugin tslib &
 	;;
   upgradeApplication)
-	cd /update
+	cd $upgraderPath
 	echo "Prepare to upgrade Application"
 	/etc/init.d/rbctrl.sh stop
-	export OPERATE_TYPE=upgradeApplication
-	export OPERATE_TYPE
-#	./upgrader -plugin rbteach -plugin tslib &
 	./upgradeApplication.sh /mnt/udisk
+	/var/volatile/update/chrt-sqfs.sh /update/upgrader $1
 	;;
   *)
 	echo "Usage: $0 {upgradeKernel|upgradeServo|upgradeDatabase|upgradeApplication}"

@@ -13,7 +13,12 @@ int main(int argc, char *argv[])
     translator.load(":/lang/zh_CN.qm");
     app.installTranslator(&translator);
 
-    Upgrader *upgrader = new Upgrader();
+    QByteArray cmd;
+    if(argc <= 1)
+        cmd = "";
+    else
+        cmd = argv[1];
+    Upgrader *upgrader = new Upgrader(cmd);
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("upgrader",upgrader);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

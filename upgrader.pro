@@ -32,17 +32,13 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     upgrader.h
 
-INCLUDEPATH += ../mcserver/include/db \
-                ../mcserver/include/db/sqlmapper
-
-# for arm
-unix:!macx: LIBS += -L$$PWD/../mcserver/plugin/sqlitedb/ -lsqlitedb
-
-INCLUDEPATH += $$PWD/../mcserver/plugin/sqlitedb
-DEPENDPATH += $$PWD/../mcserver/plugin/sqlitedb
-
 TRANSLATIONS = lang/zh_CN.ts
 
 lupdateonly {
     SOURCES += *.qml *.cpp
 }
+
+unix:!macx: LIBS += -L$$PWD/plugin/ -lsqlitedb
+
+INCLUDEPATH += $$PWD/plugin
+DEPENDPATH += $$PWD/plugin

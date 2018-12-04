@@ -5,24 +5,37 @@
 #include <QDebug>
 #include <QLibrary>
 #include <QDir>
-#include "cJSON.h"
-#include "db_manager.h"
-#include "db_context.h"
+#include "include/cJSON.h"
+#include "include/db_manager.h"
+#include "include/db_context.h"
 
-Upgrader::Upgrader(QObject *parent) : QObject(parent)
+Upgrader::Upgrader(QByteArray cmd,QObject *parent) : QObject(parent),m_cmd(cmd)
 {
 
     rebootTimer = new QTimer(this);
     restartAppTimer = new QTimer(this);
-    m_operateType = qgetenv("OPERATE_TYPE");
+    statusThread = new MyThread(cmd);
+    if(cmd.length()!=0){
+        QString tmp(cmd);
+        if(tmp.compare("upgradeKernel") == 0 ||
+                tmp.compare("upgradeDatabase") == 0 ||
+                tmp.compare("upgradeApplication") == 0 )
+            m_operateType = tmp;
+        else
+            m_operateType = "upgradeApplication";
+    }else{
+        m_operateType = qgetenv("OPERATE_TYPE");
+    }
     m_exitCounter = 4;
 
     connect(rebootTimer, SIGNAL(timeout()),
             this, SLOT(rebootSystem()));
     connect(restartAppTimer, SIGNAL(timeout()),
             this, SLOT(restartApp()));
-    connect(&statusThread,SIGNAL(statusChanged(QString)),
+    connect(statusThread,SIGNAL(statusChanged(QString)),
             this,SLOT(updateStatus(QString)));
+    connect(statusThread,SIGNAL(progressChanged(QString)),
+            this,SLOT(updateProgress(QString)));
 }
 
 //function : QML创建完成后调用程序
@@ -33,8 +46,9 @@ void Upgrader::start()
             m_operateType.compare("upgradeDatabase") == 0 ||
             m_operateType.compare("backupDatabase") == 0 ||
             m_operateType.compare("backupFactoryApplication") == 0 ||
-            m_operateType.compare("recoveryDatabase") == 0){
-        statusThread.start();
+            m_operateType.compare("recoveryDatabase") == 0 ||
+            m_operateType.compare("upgradeApplication") == 0){
+        statusThread->start();
     }
 }
 
@@ -56,6 +70,17 @@ void Upgrader::updateStatus(QString status){
         return;
     }
     setMessage(status);
+}
+
+void Upgrader::updateProgress(QString progress){
+    if(progress.compare("100.00") == 0){
+        marqueeFinish();
+        if(m_operateType.compare("upgradeApplication") == 0){
+            setMessage(tr("Upgrade Application success."));
+        }
+        rebootTimer->start(5000);
+    }
+    setProgress(progress);
 }
 
 //function : 系统重启函数
@@ -96,30 +121,28 @@ void Upgrader::restartApp(){
 
 }
 
-//function : Shell中翻译转换
-void Upgrader::showTranslate(QString source){
-    if(source.compare("Prepare to upgrade kernel.") == 0)
-        setMessage(tr("Prepare to upgrade kernel."));
-    else if(source.compare("Prepare upgrade kernel failed.") == 0)
-        setMessage(tr("Prepare upgrade kernel failed."));
-    else if(source.compare("Start to upgrade kernel.") == 0)
-        setMessage(tr("Start to upgrade kernel."));
-    else if(source.compare("Upgrade kernel failed.") == 0)
-        setMessage(tr("Upgrade kernel failed."));
-    else if(source.compare("Delete temporary data.") == 0)
-        setMessage(tr("Delete temporary data."));
-    else if(source.compare("Delete temporary data failed.") == 0)
-        setMessage(tr("Delete temporary data failed."));
-    else if(source.compare("Upgrade kernel success.") == 0)
-        setMessage(tr("Upgrade kernel success."));
+//function
+MyThread::MyThread(QByteArray cmd)
+{
+    qDebug()<<"MyThread cmd.length = "<<cmd.length();
+    if(cmd.length()!=0){
+        QString tmp(cmd);
+        if(tmp.compare("upgradeKernel") == 0 ||
+                tmp.compare("upgradeDatabase") == 0 ||
+                tmp.compare("upgradeApplication") == 0){
+            m_operateType = tmp;
+        }else
+            m_operateType = "upgradeApplication";
+    }else{
+        m_operateType = qgetenv("OPERATE_TYPE");
+    }
 }
 
 void MyThread::run(){
-    QString m_operateType = qgetenv("OPERATE_TYPE");
     if(m_operateType.compare("upgradeKernel") == 0){
         executeShell("/update/upgradeKernel.sh");
     }else if(m_operateType.compare("upgradeApplication") == 0){
-        executeShell("/update/upgradeApplication.sh /mnt/udisk");
+        executeShell("/mnt/tmp/update-final.sh");
     }else if(m_operateType.compare("upgradeDatabase") == 0){
         upgradeDatabase();
     }else if(m_operateType.compare("backupDatabase") == 0){
@@ -141,7 +164,21 @@ void MyThread::executeShell(const char *shell)
     while(fgets(buf,1024-1,fpRead) != NULL)
     {
         QString buffer(buf);
-        showTranslate(buffer);
+        //////////////////////////////////////////
+        QRegularExpression re("progress ([0-9]*\\.?[0-9]+)%");
+        QRegularExpressionMatch match = re.match(buffer);
+        if (!match.hasMatch()){
+            showTranslate(buffer);
+        }else{
+            bool ok;
+            float progress = match.capturedRef(1).toFloat(&ok);
+            if(ok){
+                if(qAbs(progress-m_progress)>0.0001){
+                    m_progress = progress;
+                    emit progressChanged(QString::number(m_progress,'f',2));
+                }
+            }
+        }
         memset(buf,0x00,sizeof(buf));
     }
     if(fpRead != NULL)
@@ -232,6 +269,12 @@ void MyThread::showTranslate(QString source)
         emit statusChanged(tr("Start to upgrade kernel."));
     else if(source.compare("Upgrade kernel failed.") == 0)
         emit statusChanged(tr("Upgrade kernel failed."));
+    else if(source.compare("now,let's waiting for update!") == 0)
+        emit statusChanged(tr("now,let's waiting for update!"));
+    else if(source.compare("Update firmware") == 0)
+        emit statusChanged(tr("Update firmware"));
+    else if(source.compare("Please wait.") == 0)
+        emit statusChanged(tr("Upgrading Application,please wait."));
     else if(source.compare("Delete temporary data.") == 0)
         emit statusChanged(tr("Delete temporary data."));
     else if(source.compare("Delete temporary data failed.") == 0)

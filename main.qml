@@ -67,11 +67,12 @@ Window {
                     color: showColor[timeCount >= 3 ? 1 : 0];
                     anchors.verticalCenter: parent.verticalCenter;
                 }
-                /*Rectangle{
+                Rectangle{
                     width: 12;height: 12;
                     color: "transparent";
                 }
                 Label{
+                    visible: upgrader.progress != "0.00"
                     id: progressValue
                     font{
                         pixelSize : fontSize;
@@ -80,7 +81,7 @@ Window {
                     verticalAlignment: Text.AlignVCenter
                     color : "#333333";
                     text: upgrader.progress + "%";
-                }*/
+                }
 
             }
         }

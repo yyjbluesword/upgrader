@@ -8,3 +8,5 @@ qrc_qml.*
 *.o
 upgrader
 *.qm
+include/*
+plugin/*
