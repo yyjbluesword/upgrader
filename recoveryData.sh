@@ -1,6 +1,7 @@
 #!/bin/sh
 plcPath="/mnt/udisk/rbctrl/data/user/"
 jbiPath="/mnt/udisk/rbctrl/program/"
+upgradePath="/update"
 case "$1" in
   recoveryPLC)
  	echo "recovery plc data ..."
@@ -22,20 +23,16 @@ case "$1" in
 	;;
   recoveryDatabase)
 	echo "recovery Database ..."
-	cd /rbctrl
+	cd $upgradePath
 	/etc/init.d/rbctrl.sh stop
 	cp /mnt/udisk/db/parameters.bak /update
-	sleep 1
-	export OPERATE_TYPE=recoveryDatabase
-	./upgrader -plugin rbteach -plugin tslib &
+	./upgrader recoveryDatabase -plugin rbteach -plugin tslib &
 	;;
   recoveryFactoryApplication)
 	echo "recovery factory application ..."
-	cd /update
+	cd $upgradePath
 	/etc/init.d/rbctrl.sh stop
-	sleep 1
-	export OPERATE_TYPE=recoveryFactoryApplication
-	./upgrader -plugin rbteach -plugin tslib &
+	./upgrader recoveryFactoryApplication
 	;;
   *)
 	echo "Usage: $0 {recoveryPLC|recoveryJBI|recoveryDatabase|recoveryFactoryApplication}"

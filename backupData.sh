@@ -1,6 +1,7 @@
 #!/bin/sh
 plcPath="/mnt/udisk/rbctrl/data/user/"
 jbiPath="/mnt/udisk/rbctrl/program/"
+upgradePath="/update"
 case "$1" in
   backupPLC)
  	echo "backup plc data ..."
@@ -22,21 +23,18 @@ case "$1" in
 	;;
   backupDatabase)
 	echo "backupDatabase..."
-	cd /rbctrl
+	cd $upgradePath
 	killall -9 cobot
 	sleep 1 
-	export OPERATE_TYPE=backupDatabase
-	./upgrader -plugin rbteach -plugin tslib &
-#	./cobot -plugin rbteach -plugin tslib &
+	./upgrader backupDatabase -plugin rbteach -plugin tslib &
 	cd ..
 	;;
   backupFactoryApplication)
 	echo "backup factory appliction ..."
-	cd /rbctrl
+	cd $upgradePath
 	/etc/init.d/rbctrl.sh stop
 	sleep 1
-	export OPERATE_TYPE=backupFactoryApplication
-	./upgrader -plugin rbteach -plugin tslib &
+	./upgrader backupFactoryApplication -plugin rbteach -plugin tslib &
 	;;
   *)
 	echo "Usage: $0 {backupPLC|backupJBI|backupDatabase|backupFactoryApplication}"

@@ -11,18 +11,11 @@ case "$1" in
 	./upgrader $1 -plugin rbteach -plugin tslib &
 	;;
   upgradeServo)
-#	echo "backup jbi files ..."
-#	if [ -d $jbiPath ]; then
-#   echo "the dir have been created!";
-#	else
-#    mkdir $jbiPath -p
-#	fi
-#	cp /rbctrl/*.jbi $jbiPath
 	;;
   upgradeDatabase)
 	cd $upgraderPath
 	echo "prepare to upgrade Database"
-	cp /mnt/udisk/rbctrl/db/elibotDB.upgrade.pkg /update
+	cp /mnt/udisk/rbctrl/update/elibotDB.upgrade.pkg /update
 	/etc/init.d/rbctrl.sh stop
 	./upgrader $1 -plugin rbteach -plugin tslib &
 	;;

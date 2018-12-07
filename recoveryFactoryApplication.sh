@@ -1,15 +1,39 @@
 #!/bin/sh
 
+prepareRecovery()
+{	
+	mv /rbctrl /tmp
+	if [ $? -ne 0 ]; then
+	echo "prepare recovery Facotry Application failed"
+	echo "failed"
+	exit 1
+	fi
+}
+decompressingFiles()
+{
+	cd /
+	tar -xvf rbctrl.tar
+	if [ $? -ne 0 ]; then
+	echo "Decompressing files failed"
+	echo "failed"
+	exit 2
+	fi
+}
+removeData()
+{
+	rm -rf /tmp/rbctrl
+	if [ $? -ne 0 ]; then
+	echo "Remove data failed"
+	echo "failed"
+	exit 3
+	fi
+}
+
 echo "start to recovery Factory Application"
-export OPERATE_STATUS=OPERATEING
-export OPERATE_STATUS
-mv /rbctrl /tmp
-cd /
-tar -xvf rbctrl.tar /
-sleep 3
-rm -rf /tmp/rbctrl
-sync
-export OPERATE_STATUS=OPERATEOVER
-export OPERATE_STATUS
-echo "recovery Factory Application finished."
+prepareRecovery
+decompressingFiles
+removeData
+echo "recovery Factory Application success."
+echo "success"
+
 
