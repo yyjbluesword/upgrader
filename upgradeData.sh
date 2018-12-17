@@ -11,6 +11,9 @@ case "$1" in
 	./upgrader $1 -plugin rbteach -plugin tslib &
 	;;
   upgradeServo)
+	echo "prepare to upgrade servo"
+	/etc/init.d/rbctrl.sh stop
+	./upgrader $1 -plugin rbteach -plugin tslib &
 	;;
   upgradeDatabase)
 	cd $upgraderPath
