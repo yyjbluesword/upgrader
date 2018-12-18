@@ -10,7 +10,7 @@ case "$1" in
 	/etc/init.d/rbctrl.sh stop
 	./upgrader $1 -plugin rbteach -plugin tslib &
 	;;
-  upgradeServo)
+  upgradeServo_[1-7])
 	echo "prepare to upgrade servo"
 	/etc/init.d/rbctrl.sh stop
 	./upgrader $1 -plugin rbteach -plugin tslib &
