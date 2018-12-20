@@ -25,7 +25,6 @@ case "$1" in
 	echo "backupDatabase..."
 	cd $upgradePath
 	killall -9 cobot
-	sleep 1 
 	./upgrader backupDatabase -plugin rbteach -plugin tslib &
 	cd ..
 	;;
@@ -33,7 +32,6 @@ case "$1" in
 	echo "backup factory appliction ..."
 	cd $upgradePath
 	/etc/init.d/rbctrl.sh stop
-	sleep 1
 	./upgrader backupFactoryApplication -plugin rbteach -plugin tslib &
 	;;
   *)

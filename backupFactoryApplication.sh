@@ -8,7 +8,6 @@ if [ $? -ne 0 ]; then
 	echo "failed"
 	exit 1
 fi
-sleep 3
 sync
 echo "Backup Factory Application success."
 echo "success"
