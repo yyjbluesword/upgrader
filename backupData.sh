@@ -1,16 +1,17 @@
 #!/bin/sh
-plcPath="/mnt/udisk/rbctrl/data/user/"
-jbiPath="/mnt/udisk/rbctrl/program/"
+plcSysPath="/rbctrl/data/sys"
+plcUdiskPath="/mnt/udisk/rbctrl/data/sys"
+jbiPath="/mnt/udisk/rbctrl/program"
 upgradePath="/update"
 case "$1" in
   backupPLC)
  	echo "backup plc data ..."
-	if [ -d $plcPath ]; then
+	if [ -d $plcUdiskPath ]; then
     echo "the dir have been created!";
 	else
-    mkdir $plcPath -p
+    mkdir $plcUdiskPath -p
 	fi
-	cp /rbctrl/plc.dat $plcPath
+	cp ${plcSysPath}/plc.dat $plcUdiskPath
 	;;
   backupJBI)
 	echo "backup jbi files ..."
