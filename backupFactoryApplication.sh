@@ -2,7 +2,7 @@
 
 echo "Start to back up Factory Application"
 cd /
-tar -cvf rbctrl.tar /rbctrl
+tar -cvf /update/rbctrl.tar /rbctrl
 if [ $? -ne 0 ]; then
 	echo "Backup Factory Application Failed!"
 	echo "failed"
