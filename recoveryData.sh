@@ -1,16 +1,17 @@
 #!/bin/sh
-plcPath="/mnt/udisk/rbctrl/data/user/"
+plcUDiskPath="/mnt/udisk/rbctrl/data/sys"
+plcSysPath="/rbctrl/data/sys"
 jbiPath="/mnt/udisk/rbctrl/program/"
 upgradePath="/update"
 case "$1" in
   recoveryPLC)
  	echo "recovery plc data ..."
-	if [ -d "/rbctrl/data/user" ]; then
+	if [ -d "/rbctrl/data/sys" ]; then
 	    echo "the dir have been created!";
 	else
-	    mkdir "/rbctrl/data/user" -p
+	    mkdir "/rbctrl/data/sys" -p
 	fi
-	cp ${plcPath}/plc.dat /rbctrl/data/user/
+	cp ${plcUDiskPath}/plc.dat $plcSysPath
 	;;
   recoveryJBI)
 	echo "recovery jbi files ..."

@@ -25,9 +25,7 @@ case "$1" in
   upgradeApplication)
 	cd $upgraderPath
 	echo "Prepare to upgrade Application"
-	/etc/init.d/rbctrl.sh stop
-	./upgradeApplication.sh /mnt/udisk
-	/var/volatile/update/chrt-sqfs.sh /update/upgrader $1
+	./upgrader $1 -plugin rbteach -plugin tslib &
 	;;
   *)
 	echo "Usage: $0 {upgradeKernel|upgradeServo|upgradeDatabase|upgradeApplication}"
