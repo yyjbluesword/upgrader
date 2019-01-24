@@ -1,4 +1,4 @@
 #!/bin/sh
 
-rm /update/elibotDB.upgrade.pkg
+rm -rf /rbctrl/update/
 reboot
